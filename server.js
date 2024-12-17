@@ -17,7 +17,10 @@ connectDB();
 const app = express()
 
 
-app.use(cors({ origin: ["https://ecommerce-mern-frontend-delta.vercel.app"] }));
+app.use(cors({ origin: ["https://ecommerce-mern-frontend-delta.vercel.app"],
+           methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+    credentials: true // Allows cookies to be sent   
+             }));
 
 //middleware
 app.use(express.json())
