@@ -19,6 +19,8 @@ const app = express()
 
 app.use(cors())
 
+app.use(cors({ origin: ["https://ecommerce-mern-frontend-delta.vercel.app"] }));
+
 //middleware
 app.use(express.json())
 app.use(morgan('dev'))
