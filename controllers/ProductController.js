@@ -3,8 +3,9 @@ import ProductModel from "../models/ProductModel.js"
 import fs from 'fs'
 
 export const CreateProductController = async (req, res) => {
+
     try {
-        const { name, description, price, category, quantity } = req.fields;
+        const { name, description, price, category, quantity, shipping } = req.fields;
         const { photo } = req.files
 
         // validation
@@ -24,8 +25,11 @@ export const CreateProductController = async (req, res) => {
             case !quantity:
                 return res.status(500).send({ error: "Quantity Required" })
 
-            case photo && photo.size > 100000:
-                return res.status(500).send({ error: "Photo Required & less than 1MB" })
+            case !shipping:
+                return res.status(500).send({ error: "Shiipping Required" })
+
+            case !photo:
+                return res.status(500).send({ error: "Photo Required" })
         }
 
 
@@ -183,24 +187,31 @@ export const UpdateProductController = async (req, res) => {
     }
 };
 
-// filters
+// filters porducts by category and price
 export const productFiltersController = async (req, res) => {
     try {
-        const { checked, radio } = req.body;
+        const { checked = [], radio = [] } = req.body; // Provide defaults
         let args = {};
-        if (checked.length > 0) args.category = checked;
-        if (radio.length) args.price = { $gte: radio[0], $lte: radio[1] };
+
+        // Filter by category
+        if (checked.length > 0) args.category = { $in: checked };
+
+        // Filter by price range
+        if (radio.length === 2) {
+            args.price = { $gte: Number(radio[0]), $lte: Number(radio[1]) };
+        }
+
         const products = await ProductModel.find(args);
         res.status(200).send({
             success: true,
             products,
         });
     } catch (error) {
-        console.log(error);
+        console.error("Error while filtering products:", error.message);
         res.status(400).send({
             success: false,
-            message: "Error While Filtering Products",
-            error,
+            message: "Error while filtering products",
+            error: error.message,
         });
     }
 };
@@ -247,6 +258,34 @@ export const productListController = async (req, res) => {
         });
     }
 };
+
+// similar products
+export const realtedProductController = async (req, res) => {
+    try {
+        const { pid, cid } = req.params;
+        const products = await ProductModel
+            .find({
+                category: cid,
+                _id: { $ne: pid },
+            })
+            .select("-photo")
+            .limit(3)
+            .populate("category");
+        res.status(200).send({
+            success: true,
+            products,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({
+            success: false,
+            message: "error while geting related product",
+            error,
+        });
+    }
+};
+
+
 
 
 
