@@ -99,7 +99,7 @@ export const loginController = async (req, res) => {
         }
 
         //create token
-        const token = await JWT.sign({ _id: user._id }, process.env.JWT_SECRETKEY,
+        const token = await JWT.sign({ _id: user._id },"kshfh385n98*jfmvmk",
             {
                 //token expired
                 expiresIn: '7d'
